@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Serveransicht</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="page-shell">
+      <section class="intro">
+        <p class="eyebrow"><span></span> Live-Serveransicht</p>
+        <h1>Alle Spieler.<br /><strong>Auf einen<br />Blick.</strong></h1>
+        <p class="description">Eine Web-Vorschau für eine Roblox-Server-Spielerliste. Neue Spieler erscheinen direkt, verlassene Serverplätze verschwinden automatisch.</p>
+
+        <div class="server-status">
+          <div class="status-name"><i></i><span>Serverstatus<br /><b>Island RP/VC</b></span></div>
+          <div class="status-count" id="serverCount">5</div>
+        </div>
+
+        <div class="admin-panel inactive" id="adminPanel">
+          <div class="admin-heading">
+            <div class="admin-identity"><span class="admin-lock">◆</span><div><small>VERWALTUNGSZUGANG</small><strong id="adminState">Admin-Modus gesperrt</strong></div></div>
+            <button id="logout">Admin anmelden</button>
+          </div>
+          <div class="admin-insights">
+            <div><small>ONLINE</small><b id="adminOnlineCount">0</b></div>
+            <div><small>SPIELER</small><b id="adminPlayerCount">5</b></div>
+            <div><small>SESSION</small><b id="adminSession">GESPERRT</b></div>
+          </div>
+        </div>
+        <p class="admin-controls-title">Serveraktionen</p>
+        <div class="actions">
+          <button class="button primary" id="simulate">+ <span>Spieler simulieren</span></button>
+          <button class="button secondary" id="removeLast">Letzten entfernen</button>
+          <button class="button danger" id="removeAll">Alle entfernen</button>
+        </div>
+
+        <form class="add-form" id="addForm">
+          <p class="admin-controls-title">Admin hinzufügen</p>
+          <label>Spieler mit Discord-Anzeigename hinzufügen</label>
+          <div class="inputs">
+            <input id="discordName" placeholder="Discord-Anzeige" required />
+            <input id="robloxName" placeholder="Roblox-Name" />
+            <input id="customStatus" type="password" placeholder="Status-Passwort" />
+            <label class="online-check"><input id="online" type="checkbox" checked /> <span>Online</span></label>
+            <button class="button add" type="submit">Hinzufügen</button>
+          </div>
+        </form>
+        <div class="accent-line"></div>
+        <button class="owner-trigger" id="ownerTrigger" aria-label="Owner-Bereich öffnen"></button>
+      </section>
+
+      <aside class="lobby-card">
+        <div class="lobby-top">
+          <div><p>Server-Lobby</p><h2>Online Admins</h2></div>
+          <span class="live"><i></i> Live</span>
+        </div>
+        <div class="lobby-tools"><label class="toggle"><input id="avatarToggle" type="checkbox" checked /><span></span></label> Avatare anzeigen <b id="playerText">5 Spieler</b></div>
+        <div class="player-list" id="playerList"></div>
+      </aside>
+    </main>
+    <template id="playerTemplate">
+      <article class="player">
+        <div class="avatar"></div>
+        <div class="player-info"><div><small class="number"></small><b class="display-name"></b></div><span class="handle"></span></div>
+        <button class="presence" type="button" aria-label="Online-Status ändern"></button><span class="role">ADMIN</span><span class="du">DU</span><button class="remove" aria-label="Spieler entfernen">×</button>
+      </article>
+    </template>
+    <div class="password-dialog" id="passwordDialog" aria-hidden="true">
+      <form class="password-card" id="passwordForm">
+        <button class="close-dialog" type="button" id="closeDialog" aria-label="Schließen">×</button>
+        <span class="dialog-dot"></span><p id="dialogEyebrow">Admin-Berechtigung</p><h2 id="dialogTitle">Admin anmelden</h2>
+        <label for="adminPassword" id="passwordLabel">Admin-Status-Passwort</label>
+        <input id="adminPassword" type="password" autocomplete="current-password" placeholder="Passwort eingeben" required />
+        <span class="password-error" id="passwordError"></span>
+        <button class="button primary" id="passwordSubmit" type="submit">Admin-Modus aktivieren</button>
+      </form>
+    </div>
+    <div class="access-denied" id="accessDenied" role="alert" aria-live="assertive">
+      <span>!</span><div><b>Zugriff verweigert</b><small>Status-Passwort ist falsch.</small><i></i></div>
+    </div>
+    <div class="owner-dialog" id="ownerDialog" aria-hidden="true">
+      <form class="owner-card" id="ownerForm">
+        <button class="close-dialog" type="button" id="closeOwner" aria-label="Schließen">×</button>
+        <span class="dialog-dot"></span><p>Geschützter Bereich</p><h2 id="ownerTitle">Owner Control Center</h2>
+        <div class="owner-note">Verwalte Berechtigungen, Passwörter und den Live-Status deines Servers an einem Ort.</div>
+        <div class="owner-live-strip"><span><i></i> System live</span><span id="ownerClock">--:--:--</span></div>
+        <div id="ownerLogin">
+          <label for="ownerPassword">Owner-Passwort</label>
+          <input id="ownerPassword" type="password" autocomplete="current-password" placeholder="Owner-Passwort eingeben" required />
+          <span class="password-error" id="ownerError"></span>
+          <button class="button primary" type="submit">Owner-Bereich öffnen</button>
+        </div>
+        <div id="ownerSettings" hidden>
+          <div class="owner-dashboard" id="ownerDashboard">
+            <div><small>SPIELER</small><b id="dashboardPlayers">0</b></div>
+            <div><small>ONLINE</small><b class="online" id="dashboardOnline">0</b></div>
+            <div><small>ADMINS</small><b class="admins" id="dashboardAdmins">0</b></div>
+          </div>
+          <div class="owner-section-title"><span>01</span> Zugänge &amp; Sicherheit</div>
+          <label for="ownerPasswordSetting">Owner-Passwort</label>
+          <input id="ownerPasswordSetting" type="text" autocomplete="off" />
+          <label for="adminPasswordSetting">Admin-Passwort</label>
+          <input id="adminPasswordSetting" type="text" autocomplete="off" />
+          <div class="owner-section-title"><span>02</span> Spieler &amp; Berechtigungen</div>
+          <div class="owner-players" id="ownerPlayers"></div>
+          <div class="owner-section-title"><span>03</span> Live-Überwachung</div>
+          <div class="status-filters" aria-label="Status filtern">
+            <button class="filter active" type="button" data-status-filter="all">Alle</button>
+            <button class="filter" type="button" data-status-filter="online">Online</button>
+            <button class="filter" type="button" data-status-filter="offline">Offline</button>
+          </div>
+          <div class="owner-history" id="ownerHistory"></div>
+          <div class="owner-section-title"><span>04</span> Sammelaktionen</div>
+          <div class="owner-bulk">
+            <h3>Alle Spieler steuern</h3>
+            <label for="bulkStatusPassword">Passwort für alle Statusänderungen</label>
+            <input id="bulkStatusPassword" type="password" placeholder="Passwort eingeben" />
+            <div class="bulk-actions">
+              <button class="button bulk-online" id="allOnline" type="button">Alle online</button>
+              <button class="button bulk-offline" id="allOffline" type="button">Alle offline</button>
+            </div>
+            <span class="password-error" id="bulkStatusError"></span>
+          </div>
+          <button class="button primary" type="submit">Änderungen speichern</button>
+        </div>
+      </form>
+    </div>
+    <script src="script.js"></script>
+    <script src="history.js"></script>
+  </body>
+</html>
